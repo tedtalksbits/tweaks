@@ -1,0 +1,6 @@
+# Tweaks: each tweak can be switched off here. Restart the server after a change.
+
+# Sneak + right-click a lever with both hands empty to turn it north -> east -> south -> west, like the debug stick.
+# Survival and creative only; needs the permission tweaks.leverrotate (everyone has it by default).
+lever-rotate:
+  enabled: true

@@ -1,0 +1,10 @@
+name: Tweaks
+version: '${version}'
+main: dev.whizzle.tweaks.TweaksPlugin
+api-version: '26.3'
+author: tedtalksbits
+description: Small one-click survival tweaks. Sneak + right-click a lever with empty hands to turn it.
+permissions:
+  tweaks.leverrotate:
+    description: Sneak + right-click a lever with both hands empty to turn it (like the debug stick).
+    default: true
