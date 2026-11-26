@@ -1,0 +1,50 @@
+# Push a tag named after the plugin version (v0.1.0 for plugin 0.1.0) to publish a GitHub release with the plugin jar.
+# It runs the whole CI workflow first (build, unit tests, real-Paper self-test) and publishes only if that passes.
+# Nothing is deployed to any server.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    name: Publish the release
+    needs: ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with:
+          name: tweaks-plugin
+          path: dist
+      - name: Check the tag matches the plugin version
+        id: versions
+        run: |
+          plugin=$(sed -n 's/^ *version = "\(.*\)"/\1/p' build.gradle.kts | head -n 1)
+          echo "plugin $plugin, tag $GITHUB_REF_NAME"
+          if [ "$GITHUB_REF_NAME" != "v$plugin" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME doesn't match the plugin version $plugin (build.gradle.kts). Tag v$plugin, or bump the version first."
+            exit 1
+          fi
+          [ -f "dist/tweaks-plugin-$plugin.jar" ] || { echo "::error::Missing dist/tweaks-plugin-$plugin.jar"; ls -la dist; exit 1; }
+          echo "plugin=$plugin" >> "$GITHUB_OUTPUT"
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PLUGIN: ${{ steps.versions.outputs.plugin }}
+        run: |
+          notes="Paper plugin $PLUGIN for Minecraft 26.3. Server only: no client mod needed.
+
+          - Put tweaks-plugin-$PLUGIN.jar in the server's plugins/ folder and restart."
+          gh release create "$GITHUB_REF_NAME" --title "Tweaks $GITHUB_REF_NAME" --notes "$notes" --generate-notes \
+            "dist/tweaks-plugin-$PLUGIN.jar"

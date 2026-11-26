@@ -1,0 +1,6 @@
+name: TweaksSelfTest
+version: dev
+main: dev.whizzle.tweaks.selftest.SelfTestPlugin
+api-version: '26.3'
+depend: [Tweaks]
+description: Development-only checks of Tweaks on a real Paper server.
